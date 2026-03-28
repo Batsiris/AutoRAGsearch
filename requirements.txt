@@ -1,0 +1,12 @@
+langchain
+langchain-community
+langchain-google-genai
+google-generativeai
+sentence-transformers
+rank-bm25
+chromadb
+pandas
+numpy
+rouge-score
+bert-score
+scikit-learn
