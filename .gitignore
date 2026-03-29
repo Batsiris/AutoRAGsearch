@@ -2,3 +2,4 @@ chroma_db/
 .chroma_config_hash
 __pycache__/
 *.pyc
+CLAUDE.md

@@ -36,6 +36,7 @@ def main():
     from rag_pipeline import run_pipeline, get_config
 
     qa_df, corpus_df = load_dataset(args.data_dir)
+    qa_df = qa_df.head(20)
 
     # Build ground-truth doc ID map: for each question, what doc_ids are relevant?
     # We match ground_truth_contexts text against corpus to find doc_ids

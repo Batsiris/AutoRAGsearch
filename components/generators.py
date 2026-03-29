@@ -18,7 +18,7 @@ DEFAULT_PROMPT_TEMPLATE = (
 class Generator:
     """Generates answers using Google Gemini via LangChain with exponential backoff."""
 
-    def __init__(self, model_name: str = "gemini-2.5-flash", temperature: float = 0.3):
+    def __init__(self, model_name: str = "gemini-2.5-flash-lite", temperature: float = 0.3):
         from langchain_google_genai import ChatGoogleGenerativeAI
         self.model_name = model_name
         self.temperature = temperature
