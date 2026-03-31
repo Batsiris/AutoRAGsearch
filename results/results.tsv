@@ -1,1 +1,1 @@
-experiment_id	description	composite	faithfulness	answer_correctness	context_recall	context_precision	answer_relevancy	answer_similarity	result
+experiment_id	phase	description	retrieval_score	recall_at_k	ndcg_at_k	precision_at_k	mrr	map_at_k	hit_rate_at_k	num_eval_samples	wall_clock_seconds	delta_vs_best	result	reasoning	timestamp

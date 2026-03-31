@@ -7,13 +7,6 @@ The agent modifies these values between experiments.
 import hashlib
 import json
 import os
-import sys
-
-# Check for GOOGLE_API_KEY
-if not os.environ.get("GOOGLE_API_KEY"):
-    print("ERROR: GOOGLE_API_KEY not set. Get a free key at https://aistudio.google.com/")
-    print("Then: export GOOGLE_API_KEY='your-key-here'")
-    sys.exit(1)
 
 # === PIPELINE CONFIGURATION ===
 # The agent will modify these values during optimization.
@@ -30,14 +23,7 @@ RERANK_TOP_N = 3
 # Vector DB settings
 CHROMA_PERSIST_DIR = "./chroma_db"
 CHROMA_COLLECTION_NAME = "autoragsearch"
-DISTANCE_METRIC = "cosine"  # "cosine", "l2", or "ip"
-
-PROMPT_TEMPLATE = (
-    "Answer the question based on the provided context.\n\n"
-    "Context:\n{context}\n\n"
-    "Question: {question}\n\n"
-    "Answer:"
-)
+DISTANCE_METRIC = "cosine"  # fixed — do not change
 
 # === END CONFIGURATION ===
 
@@ -58,7 +44,6 @@ def get_config() -> dict:
         "use_reranker": USE_RERANKER,
         "reranker_model": RERANKER_MODEL,
         "rerank_top_n": RERANK_TOP_N,
-        "prompt_template": PROMPT_TEMPLATE,
         "chroma_persist_dir": CHROMA_PERSIST_DIR,
         "chroma_collection_name": CHROMA_COLLECTION_NAME,
         "distance_metric": DISTANCE_METRIC,
@@ -96,7 +81,6 @@ def build_pipeline():
     from components.embedders import Embedder
     from components.retrievers import BM25Retriever, DenseRetriever, HybridRetriever
     from components.rerankers import Reranker, NoReranker
-    from components.generators import Generator
 
     _, corpus_df = load_dataset(DATA_DIR)
     documents = corpus_df.to_dict("records")
@@ -145,15 +129,12 @@ def build_pipeline():
     else:
         reranker = NoReranker()
 
-    generator = Generator()
-
     def _run(question: str):
         retrieved = retriever.retrieve(question, top_k=TOP_K)
         final_chunks = reranker.rerank(question, retrieved, top_n=RERANK_TOP_N)
         contexts = [c["text"] for c in final_chunks]
         retrieved_doc_ids = [c["doc_id"] for c in final_chunks]
-        answer = generator.generate(question, contexts, prompt_template=PROMPT_TEMPLATE)
-        return answer, contexts, retrieved_doc_ids
+        return contexts, retrieved_doc_ids
 
     return _run
 
@@ -166,6 +147,6 @@ def run_pipeline(question: str):
     """Run the RAG pipeline for a single question.
 
     Returns:
-        (answer: str, contexts: list[str], retrieved_doc_ids: list[str])
+        (contexts: list[str], retrieved_doc_ids: list[str])
     """
     return _pipeline(question)

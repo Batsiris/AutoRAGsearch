@@ -1,0 +1,21 @@
+{
+  "chunk_method": "fixed",
+  "chunk_size": 512,
+  "chunk_overlap": 50,
+  "embedding_model": "all-MiniLM-L6-v2",
+  "retrieval_method": "dense",
+  "top_k": 5,
+  "use_reranker": false,
+  "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+  "rerank_top_n": 3,
+  "chroma_persist_dir": "./chroma_db",
+  "chroma_collection_name": "autoragsearch",
+  "distance_metric": "cosine",
+  "retrieval_score": 0.9472216942500006,
+  "recall_at_k": 0.96,
+  "precision_at_k": 0.19200000000000092,
+  "mrr": 0.9255555555555556,
+  "ndcg_at_k": 0.9344433885000012,
+  "map_at_k": 0.9255555555555556,
+  "hit_rate_at_k": 0.96
+}

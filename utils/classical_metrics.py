@@ -75,6 +75,29 @@ def compute_retrieval_metrics(
         ndcg = dcg / idcg if idcg > 0 else 0.0
         ndcgs.append(ndcg)
 
+    maps, hit_rates = [], []
+
+    for retrieved, relevant in zip(retrieved_doc_ids, ground_truth_doc_ids):
+        if not relevant:
+            continue
+
+        relevant_set = set(relevant)
+        top_k = retrieved[:k]
+
+        # MAP@k
+        num_hits = 0
+        sum_precision = 0.0
+        for i, doc_id in enumerate(top_k, start=1):
+            if doc_id in relevant_set:
+                num_hits += 1
+                sum_precision += num_hits / i
+        map_k = sum_precision / len(relevant_set)
+        maps.append(map_k)
+
+        # Hit Rate@k
+        hit = 1.0 if any(doc_id in relevant_set for doc_id in top_k) else 0.0
+        hit_rates.append(hit)
+
     def _mean(lst):
         return sum(lst) / len(lst) if lst else 0.0
 
@@ -83,6 +106,8 @@ def compute_retrieval_metrics(
         "precision_at_k": _mean(precisions),
         "mrr": _mean(mrrs),
         "ndcg_at_k": _mean(ndcgs),
+        "map_at_k": _mean(maps),
+        "hit_rate_at_k": _mean(hit_rates),
     }
 
 
