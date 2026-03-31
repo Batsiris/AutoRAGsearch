@@ -16,7 +16,7 @@ CHUNK_OVERLAP = 50
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 RETRIEVAL_METHOD = "dense"   # "bm25", "dense", or "hybrid"
 TOP_K = 5
-USE_RERANKER = False
+USE_RERANKER = True
 RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 RERANK_TOP_N = 3
 
