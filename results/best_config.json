@@ -11,11 +11,12 @@
   "chroma_persist_dir": "./chroma_db",
   "chroma_collection_name": "autoragsearch",
   "distance_metric": "cosine",
-  "retrieval_score": 0.9867358359584864,
-  "recall_at_k": 0.9933333333333333,
-  "precision_at_k": 0.019866666666666536,
-  "mrr": 0.9756666666666667,
-  "ndcg_at_k": 0.9801383385836393,
-  "map_at_k": 0.9756666666666667,
-  "hit_rate_at_k": 0.9933333333333333
+  "data_dir": "C:\\Users\\user\\Downloads\\AutoRagSearch\\AutoRAGsearch\\data\\hotpotqa_subset",
+  "retrieval_score": 0.8902724919773882,
+  "recall_at_k": 0.84,
+  "precision_at_k": 0.03359999999999997,
+  "mrr": 0.9587500000000001,
+  "ndcg_at_k": 0.9405449839547765,
+  "map_at_k": 0.7524583333333336,
+  "hit_rate_at_k": 0.995
 }

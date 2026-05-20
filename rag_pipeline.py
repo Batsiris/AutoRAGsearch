@@ -7,6 +7,7 @@ The agent modifies these values between experiments.
 import hashlib
 import json
 import os
+import sys
 
 # === PIPELINE CONFIGURATION ===
 # The agent will modify these values during optimization.
@@ -27,7 +28,23 @@ DISTANCE_METRIC = "cosine"  # fixed — do not change
 
 # === END CONFIGURATION ===
 
-DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "nq_subset")
+def _get_data_dir_from_argv() -> str:
+    """Mirror evaluate.py's --data-dir argument without editing the harness."""
+    default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "nq_subset")
+    if "--data-dir" not in sys.argv:
+        return default_dir
+
+    idx = sys.argv.index("--data-dir")
+    if idx + 1 >= len(sys.argv):
+        return default_dir
+
+    data_dir = sys.argv[idx + 1]
+    if os.path.isabs(data_dir):
+        return data_dir
+    return os.path.abspath(os.path.join(os.getcwd(), data_dir))
+
+
+DATA_DIR = _get_data_dir_from_argv()
 
 _pipeline = None
 
@@ -47,6 +64,7 @@ def get_config() -> dict:
         "chroma_persist_dir": CHROMA_PERSIST_DIR,
         "chroma_collection_name": CHROMA_COLLECTION_NAME,
         "distance_metric": DISTANCE_METRIC,
+        "data_dir": DATA_DIR,
     }
 
 
@@ -58,6 +76,7 @@ def _needs_reindex(chunks, config_hash_path=".chroma_config_hash"):
         "chunk_overlap": CHUNK_OVERLAP,
         "embedding_model": EMBEDDING_MODEL,
         "distance_metric": DISTANCE_METRIC,
+        "data_dir": DATA_DIR,
         "num_chunks": len(chunks),
     }, sort_keys=True)
     new_hash = hashlib.md5(config_str.encode()).hexdigest()
