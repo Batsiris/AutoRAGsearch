@@ -33,3 +33,21 @@
 **Diagnostic metrics:** precision@k=0.0365 | mrr=0.9596 | map@k=0.7710 | hit_rate@k=1.0000
 **What I learned:** HotpotQA benefits strongly from returning more reranked documents; the recall gain outweighed the expected NDCG drop. The perfect hit rate confirms the first-stage pool nearly always contains at least one supporting document.
 **Next direction:** Continue increasing rerank output size to find where extra recall stops compensating for lower ranking concentration.
+
+---
+## Experiment 3
+
+**Phase:** 3-Reranking
+**Current best retrieval_score:** 0.9156
+**Weakest primary metric:** recall@k
+**Diagnostic insight:** Increasing top_n to 10 gave perfect hit rate and much higher recall while preserving MRR, so the reranker is ranking first evidence well but still may be excluding second supporting documents.
+**Hypothesis:** Increasing top_n to 15 will capture additional relevant HotpotQA supports, and the recall gain may still exceed any NDCG loss from including more lower-ranked items.
+**Change:** Increase RERANK_TOP_N from 10 to 15 while keeping dense TOP_K=50 and the same cross-encoder.
+**Expected effect:** recall@k should improve by 0.01-0.04; ndcg@k may decline by 0.01-0.03, with a possible small net gain if missing supports are recovered.
+
+### Outcome
+**Retrieval score:** 0.9218 | **Delta:** +0.0062 | **Result:** KEEP
+**Primary metrics:** recall@k=0.9350 | ndcg@k=0.9086
+**Diagnostic metrics:** precision@k=0.0374 | mrr=0.9596 | map@k=0.7747 | hit_rate@k=1.0000
+**What I learned:** Top_n=15 recovers more supporting documents and still beats the NDCG loss. The smaller delta suggests the output-size curve is approaching its optimum.
+**Next direction:** Test top_n=20 to see whether the remaining recall headroom is still worth the ranking dilution.
