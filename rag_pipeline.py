@@ -19,7 +19,7 @@ RETRIEVAL_METHOD = "dense"   # "bm25", "dense", or "hybrid"
 TOP_K = 50
 USE_RERANKER = True
 RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-RERANK_TOP_N = 15
+RERANK_TOP_N = 20
 
 # Vector DB settings
 CHROMA_PERSIST_DIR = "./chroma_db"

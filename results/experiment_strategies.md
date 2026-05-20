@@ -51,3 +51,21 @@
 **Diagnostic metrics:** precision@k=0.0374 | mrr=0.9596 | map@k=0.7747 | hit_rate@k=1.0000
 **What I learned:** Top_n=15 recovers more supporting documents and still beats the NDCG loss. The smaller delta suggests the output-size curve is approaching its optimum.
 **Next direction:** Test top_n=20 to see whether the remaining recall headroom is still worth the ranking dilution.
+
+---
+## Experiment 4
+
+**Phase:** 3-Reranking
+**Current best retrieval_score:** 0.9218
+**Weakest primary metric:** ndcg@k
+**Diagnostic insight:** Recall improved to 0.9350 at top_n=15, while NDCG fell to 0.9086 and became the weaker primary metric. MRR stayed high, so the first relevant document remains near the top.
+**Hypothesis:** Increasing top_n to 20 may recover a few more second supporting documents, but the score will only improve if that recall gain is larger than the additional NDCG dilution.
+**Change:** Increase RERANK_TOP_N from 15 to 20 while keeping dense TOP_K=50 and the same cross-encoder.
+**Expected effect:** recall@k may improve by 0.005-0.025; ndcg@k may drop by 0.01-0.03, so this is likely near the tradeoff boundary.
+
+### Outcome
+**Retrieval score:** 0.9257 | **Delta:** +0.0039 | **Result:** KEEP
+**Primary metrics:** recall@k=0.9500 | ndcg@k=0.9014
+**Diagnostic metrics:** precision@k=0.0380 | mrr=0.9596 | map@k=0.7765 | hit_rate@k=1.0000
+**What I learned:** Top_n=20 still improves the composite by adding enough supporting-document recall to offset lower NDCG. The diminishing delta suggests the next larger output may be the turning point.
+**Next direction:** Test top_n=25; if it fails, bracket the optimum between 15 and 25 with smaller steps.
