@@ -197,11 +197,16 @@ The baseline configuration files, conversion script, extra metrics script, and s
 
 ```text
 experiments/official_autorag_baseline/
-Comparison Summary
-System	Method	top_k	Precision	Recall	F1 / Retrieval Score	MRR	NDCG@k	MAP@k	Hit Rate	Full Recall
-Official AutoRAG Baseline	BM25	5	0.1457	0.7287	0.2429 F1	0.4629	0.5291	0.4629	0.7287	72.87%
-Official AutoRAG	BM25	50	0.0191	0.9574	0.0375 F1	0.4874	0.5964	0.4874	0.9574	95.74%
-Proposed Agentic RAG	Dense + Cross-Encoder Reranker	50	0.0380	0.9500	0.9257 score	0.9596	0.9014	0.7765	1.0000	—
+Core Retrieval Metrics
+System	Method	top_k	Precision	Recall	F1 / Score	Full Recall
+Official AutoRAG Baseline	BM25	5	0.1457	0.7287	0.2429 F1	72.87%
+Official AutoRAG	BM25	50	0.0191	0.9574	0.0375 F1	95.74%
+Proposed Agentic RAG	Dense + Cross-Encoder Reranker	50	0.0380	0.9500	0.9257 retrieval score	—
+Ranking-Aware Metrics
+System	Method	top_k	MRR	NDCG@k	MAP@k	Hit Rate
+Official AutoRAG Baseline	BM25	5	0.4629	0.5291	0.4629	0.7287
+Official AutoRAG	BM25	50	0.4874	0.5964	0.4874	0.9574
+Proposed Agentic RAG	Dense + Cross-Encoder Reranker	50	0.9596	0.9014	0.7765	1.0000
 
 The BM25 top_k=50 baseline achieved slightly higher recall than the proposed system, but with much lower precision and weaker ranking-aware metrics. The proposed agentic RAG system achieved nearly the same recall while substantially improving MRR, NDCG@k, MAP@k, and Hit Rate. This suggests that the agent-guided refinement process identified a stronger retrieval configuration based on dense retrieval and cross-encoder reranking, producing a better-ranked evidence set for HotpotQA-style multi-hop question answering.
 
