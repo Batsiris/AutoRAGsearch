@@ -186,29 +186,81 @@ The experiments were run on CPU, which constrained the candidate pool size (`top
 
 To provide a reproducible retrieval baseline, the project-specific HotpotQA subset was also evaluated using the official [AutoRAG](https://github.com/Marker-Inc-Korea/AutoRAG) framework in a retrieval-only setting.
 
-The original subset contained 200 QA examples and 1992 corpus documents. Since official AutoRAG expects retrieval ground truth as document IDs, the dataset was converted to the AutoRAG-compatible format. During this conversion, 12 QA examples were removed because their ground-truth contexts could not be matched to document IDs in the corpus. The final comparable evaluation subset therefore contained 188 QA examples.
+The original subset contained **200 QA examples** and **1992 corpus documents**. Since official AutoRAG expects retrieval ground truth as document IDs, the dataset was converted to the AutoRAG-compatible format. During this conversion, **12 QA examples were removed** because their ground-truth contexts could not be matched to document IDs in the corpus. The final comparable evaluation subset therefore contained **188 QA examples**.
 
 Official AutoRAG was used as a controlled BM25 retrieval baseline, not as a full AutoRAG optimization run. Two BM25 configurations were evaluated:
 
-- `top_k=5`, used as the main retrieval-only baseline.
-- `top_k=50`, used for a more controlled comparison with the proposed agentic RAG system, which also uses `top_k=50`.
+- **BM25, top_k=5**: main retrieval-only baseline.
+- **BM25, top_k=50**: controlled comparison with the proposed agentic RAG system, which also uses `top_k=50`.
 
 The baseline configuration files, conversion script, extra metrics script, and summary results are available in:
 
 ```text
 experiments/official_autorag_baseline/
-Core Retrieval Metrics
-System	Method	top_k	Precision	Recall	F1 / Score	Full Recall
-Official AutoRAG Baseline	BM25	5	0.1457	0.7287	0.2429 F1	72.87%
-Official AutoRAG	BM25	50	0.0191	0.9574	0.0375 F1	95.74%
-Proposed Agentic RAG	Dense + Cross-Encoder Reranker	50	0.0380	0.9500	0.9257 retrieval score	—
-Ranking-Aware Metrics
-System	Method	top_k	MRR	NDCG@k	MAP@k	Hit Rate
-Official AutoRAG Baseline	BM25	5	0.4629	0.5291	0.4629	0.7287
-Official AutoRAG	BM25	50	0.4874	0.5964	0.4874	0.9574
-Proposed Agentic RAG	Dense + Cross-Encoder Reranker	50	0.9596	0.9014	0.7765	1.0000
+Result Summary
+1. Official AutoRAG Baseline — BM25, top_k=5
+Setting:
+  Method: BM25 lexical retrieval
+  top_k: 5
+  QA examples: 188
+  Corpus documents: 1992
 
-The BM25 top_k=50 baseline achieved slightly higher recall than the proposed system, but with much lower precision and weaker ranking-aware metrics. The proposed agentic RAG system achieved nearly the same recall while substantially improving MRR, NDCG@k, MAP@k, and Hit Rate. This suggests that the agent-guided refinement process identified a stronger retrieval configuration based on dense retrieval and cross-encoder reranking, producing a better-ranked evidence set for HotpotQA-style multi-hop question answering.
+Core retrieval metrics:
+  Precision:   0.1457
+  Recall:      0.7287
+  F1:          0.2429
+  Full Recall: 72.87%
+
+Ranking-aware metrics:
+  MRR:         0.4629
+  NDCG@k:      0.5291
+  MAP@k:       0.4629
+  Hit Rate:    0.7287
+2. Official AutoRAG — BM25, top_k=50
+Setting:
+  Method: BM25 lexical retrieval
+  top_k: 50
+  QA examples: 188
+  Corpus documents: 1992
+
+Core retrieval metrics:
+  Precision:   0.0191
+  Recall:      0.9574
+  F1:          0.0375
+  Full Recall: 95.74%
+
+Ranking-aware metrics:
+  MRR:         0.4874
+  NDCG@k:      0.5964
+  MAP@k:       0.4874
+  Hit Rate:    0.9574
+3. Proposed Agentic RAG — Dense Retrieval + Cross-Encoder Reranker
+Setting:
+  Method: Dense retrieval + cross-encoder reranking
+  Embedding model: all-MiniLM-L6-v2
+  Reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2
+  top_k: 50
+  rerank_top_n: 20
+  Best experiment: 4
+  Total experiments: 14
+
+Core retrieval metrics:
+  Precision@k:     0.0380
+  Recall@k:        0.9500
+  Retrieval score: 0.9257
+
+Ranking-aware metrics:
+  MRR:             0.9596
+  NDCG@k:          0.9014
+  MAP@k:           0.7765
+  Hit Rate@k:      1.0000
+Interpretation
+
+The official AutoRAG BM25 baseline with top_k=5 provides a simple retrieval-only reference point. Increasing BM25 to top_k=50 significantly improves recall, from 0.7287 to 0.9574, but also greatly reduces precision, from 0.1457 to 0.0191. This is expected because returning more documents increases the chance of retrieving the correct supporting evidence, but also introduces more irrelevant documents.
+
+Compared with the BM25 top_k=50 baseline, the proposed agentic RAG system achieves almost the same recall, 0.9500 compared to 0.9574, while improving precision from 0.0191 to 0.0380. More importantly, it achieves substantially stronger ranking-aware metrics: MRR = 0.9596, NDCG@k = 0.9014, MAP@k = 0.7765, and Hit Rate@k = 1.0000.
+
+This suggests that the agent-guided refinement process identified a stronger retrieval configuration based on dense retrieval and cross-encoder reranking. The final system does not simply retrieve more documents; it ranks the relevant documents much closer to the top of the retrieved set.
 
 Reproducibility Note
 
