@@ -1,0 +1,16 @@
+modules:
+  - module_type: llama_index_chunk
+    chunk_method: [ Token ]
+    chunk_size: [ 512 ]
+    chunk_overlap: [ 128 ]
+
+node_lines:
+  - node_line_name: retrieval_only
+    nodes:
+      - node_type: lexical_retrieval
+        strategy:
+          metrics: [ retrieval_f1, retrieval_recall, retrieval_precision ]
+          speed_threshold: 10
+        top_k: 50
+        modules:
+          - module_type: bm25
