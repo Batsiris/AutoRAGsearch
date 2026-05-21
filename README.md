@@ -179,3 +179,32 @@ The experiments were run on CPU, which constrained the candidate pool size (`top
 | `MRR` | Diagnostic | How high is the first relevant doc ranked? |
 | `MAP@k` | Diagnostic | Mean Average Precision across all relevant docs |
 | `Hit Rate@k` | Diagnostic | Did retrieval find at least one relevant doc? |
+
+
+
+## Official AutoRAG Baseline Comparison
+
+To provide a reproducible retrieval baseline, the project-specific HotpotQA subset was also evaluated using the official [AutoRAG](https://github.com/Marker-Inc-Korea/AutoRAG) framework in a retrieval-only setting.
+
+The original subset contained 200 QA examples and 1992 corpus documents. Since official AutoRAG expects retrieval ground truth as document IDs, the dataset was converted to the AutoRAG-compatible format. During this conversion, 12 QA examples were removed because their ground-truth contexts could not be matched to document IDs in the corpus. The final comparable evaluation subset therefore contained 188 QA examples.
+
+Official AutoRAG was used as a controlled BM25 retrieval baseline, not as a full AutoRAG optimization run. Two BM25 configurations were evaluated:
+
+- `top_k=5`, used as the main retrieval-only baseline.
+- `top_k=50`, used for a more controlled comparison with the proposed agentic RAG system, which also uses `top_k=50`.
+
+The baseline configuration files, conversion script, extra metrics script, and summary results are available in:
+
+```text
+experiments/official_autorag_baseline/
+Comparison Summary
+System	Method	top_k	Precision	Recall	F1 / Retrieval Score	MRR	NDCG@k	MAP@k	Hit Rate	Full Recall
+Official AutoRAG Baseline	BM25	5	0.1457	0.7287	0.2429 F1	0.4629	0.5291	0.4629	0.7287	72.87%
+Official AutoRAG	BM25	50	0.0191	0.9574	0.0375 F1	0.4874	0.5964	0.4874	0.9574	95.74%
+Proposed Agentic RAG	Dense + Cross-Encoder Reranker	50	0.0380	0.9500	0.9257 score	0.9596	0.9014	0.7765	1.0000	—
+
+The BM25 top_k=50 baseline achieved slightly higher recall than the proposed system, but with much lower precision and weaker ranking-aware metrics. The proposed agentic RAG system achieved nearly the same recall while substantially improving MRR, NDCG@k, MAP@k, and Hit Rate. This suggests that the agent-guided refinement process identified a stronger retrieval configuration based on dense retrieval and cross-encoder reranking, producing a better-ranked evidence set for HotpotQA-style multi-hop question answering.
+
+Reproducibility Note
+
+The official AutoRAG baseline results were produced locally on the same project-specific HotpotQA subset used by this project. They are not pre-existing benchmark results from the official AutoRAG repository.
