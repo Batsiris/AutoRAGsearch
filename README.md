@@ -182,23 +182,32 @@ The experiments were run on CPU, which constrained the candidate pool size (`top
 
 
 
-## Official AutoRAG Baseline Comparison
+## Official AutoRAG Comparison on HotpotQA
 
-To provide a reproducible retrieval baseline, the project-specific HotpotQA subset was also evaluated using the official [AutoRAG](https://github.com/Marker-Inc-Korea/AutoRAG) framework in a retrieval-only setting.
+To provide a reproducible comparison against the official [AutoRAG](https://github.com/Marker-Inc-Korea/AutoRAG) framework, the project-specific HotpotQA subset was also evaluated using official AutoRAG in retrieval-only settings.
 
-The original subset contained **200 QA examples** and **1992 corpus documents**. Since official AutoRAG expects retrieval ground truth as document IDs, the dataset was converted to the AutoRAG-compatible format. During this conversion, **12 QA examples were removed** because their ground-truth contexts could not be matched to document IDs in the corpus. The final comparable evaluation subset therefore contained **188 QA examples**.
+The original HotpotQA subset contained **200 QA examples** and **1992 corpus documents**. Since official AutoRAG expects retrieval ground truth as document IDs, the dataset was converted to the AutoRAG-compatible format. During this conversion, **12 QA examples were removed** because their ground-truth contexts could not be matched to document IDs in the corpus. The final comparable evaluation subset therefore contained **188 QA examples**.
 
-Official AutoRAG was used as a controlled BM25 retrieval baseline, not as a full AutoRAG optimization run. Two BM25 configurations were evaluated:
+Two levels of official AutoRAG experiments were performed:
 
-- **BM25, top_k=5**: main retrieval-only baseline.
-- **BM25, top_k=50**: controlled comparison with the proposed agentic RAG system, which also uses `top_k=50`.
+- **Level 1 — BM25 retrieval-only baseline**
+  - BM25 with `top_k=5`
+  - BM25 with `top_k=50`
 
-The baseline configuration files, conversion script, extra metrics script, and summary results are available in:
+- **Level 2 — Expanded retrieval search**
+  - BM25 lexical retrieval
+  - Semantic VectorDB retrieval using local Ollama embeddings (`nomic-embed-text`)
+  - Hybrid retrieval using HybridRRF / HybridCC
+  - `top_k` search over 50, 60, and 75
+
+The official AutoRAG results were produced locally on the same project-specific HotpotQA subset used by AutoRAGsearch. They are not pre-existing benchmark results from the official AutoRAG repository.
+
+The configuration files, conversion script, extra metrics scripts, and summary outputs are available in:
 
 ```text
 experiments/official_autorag_baseline/
-Result Summary
-1. Official AutoRAG Baseline — BM25, top_k=5
+Official AutoRAG Level 1 — BM25 Baselines
+BM25, top_k=5
 Setting:
   Method: BM25 lexical retrieval
   top_k: 5
@@ -216,7 +225,7 @@ Ranking-aware metrics:
   NDCG@k:      0.5291
   MAP@k:       0.4629
   Hit Rate:    0.7287
-2. Official AutoRAG — BM25, top_k=50
+BM25, top_k=50
 Setting:
   Method: BM25 lexical retrieval
   top_k: 50
@@ -234,12 +243,47 @@ Ranking-aware metrics:
   NDCG@k:      0.5964
   MAP@k:       0.4874
   Hit Rate:    0.9574
-3. Proposed Agentic RAG — Dense Retrieval + Cross-Encoder Reranker
+Official AutoRAG Level 2 — Expanded Retrieval Search
+
+The Level 2 official AutoRAG experiment used a wider retrieval search space than the BM25-only baseline. It included lexical retrieval, semantic retrieval with local Ollama embeddings, and hybrid retrieval.
+
+The best official AutoRAG Level 2 configuration was:
+
+Setting:
+  Method: Hybrid retrieval
+  Best module: HybridRRF
+  top_k: 50
+  weight: 4.0
+  Embedding backend: Ollama
+  Embedding model: nomic-embed-text
+  QA examples: 188
+  Corpus documents: 1992
+
+Core retrieval metrics:
+  Precision:   0.0200
+  Recall:      1.0000
+  F1:          0.0392
+  Full Recall: 100.00%
+
+Ranking-aware metrics:
+  MRR:         0.5904
+  NDCG@k:      0.6886
+  MAP@k:       0.5904
+  Hit Rate:    1.0000
+Proposed AutoRAGsearch Best Configuration
+
+The best AutoRAGsearch configuration was found at experiment 4. The optimization loop stopped after 14 experiments because no improvement was found for 10 consecutive experiments.
+
 Setting:
   Method: Dense retrieval + cross-encoder reranking
+  Chunking: fixed
+  Chunk size: 512
+  Chunk overlap: 50
   Embedding model: all-MiniLM-L6-v2
-  Reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2
+  Vector store: ChromaDB
+  Distance metric: cosine
   top_k: 50
+  Reranker: cross-encoder/ms-marco-MiniLM-L-6-v2
   rerank_top_n: 20
   Best experiment: 4
   Total experiments: 14
@@ -256,12 +300,25 @@ Ranking-aware metrics:
   Hit Rate@k:      1.0000
 Interpretation
 
-The official AutoRAG BM25 baseline with top_k=5 provides a simple retrieval-only reference point. Increasing BM25 to top_k=50 significantly improves recall, from 0.7287 to 0.9574, but also greatly reduces precision, from 0.1457 to 0.0191. This is expected because returning more documents increases the chance of retrieving the correct supporting evidence, but also introduces more irrelevant documents.
+The BM25 top_k=5 run provides a simple official AutoRAG retrieval-only baseline. Increasing BM25 to top_k=50 significantly improves recall, from 0.7287 to 0.9574, but also reduces precision from 0.1457 to 0.0191. This is expected because returning more documents increases the chance of retrieving the correct supporting evidence, but also introduces more irrelevant documents.
 
-Compared with the BM25 top_k=50 baseline, the proposed agentic RAG system achieves almost the same recall, 0.9500 compared to 0.9574, while improving precision from 0.0191 to 0.0380. More importantly, it achieves substantially stronger ranking-aware metrics: MRR = 0.9596, NDCG@k = 0.9014, MAP@k = 0.7765, and Hit Rate@k = 1.0000.
+The Level 2 official AutoRAG experiment is a stronger comparison because it uses a wider retrieval search space. Its best configuration, HybridRRF with Ollama embeddings and top_k=50, achieved perfect recall and full recall:
 
-This suggests that the agent-guided refinement process identified a stronger retrieval configuration based on dense retrieval and cross-encoder reranking. The final system does not simply retrieve more documents; it ranks the relevant documents much closer to the top of the retrieved set.
+Recall:      1.0000
+Full Recall: 100.00%
+
+This means that all ground-truth supporting documents were retrieved within the top-50 results for all 188 evaluable questions.
+
+However, AutoRAGsearch achieved substantially better ranking quality. Compared with official AutoRAG Level 2, AutoRAGsearch obtained:
+
+Precision: 0.0380 vs 0.0200
+MRR:       0.9596 vs 0.5904
+NDCG@k:    0.9014 vs 0.6886
+MAP@k:     0.7765 vs 0.5904
+Hit Rate:  1.0000 vs 1.0000
+
+Therefore, official AutoRAG Level 2 was stronger in pure recall, achieving 100% recall, while AutoRAGsearch produced a more precise and better-ranked retrieved set. This is mainly due to the use of dense retrieval combined with cross-encoder reranking, which places the relevant evidence much closer to the top of the retrieved list.
 
 Reproducibility Note
 
-The official AutoRAG baseline results were produced locally on the same project-specific HotpotQA subset used by this project. They are not pre-existing benchmark results from the official AutoRAG repository.
+The official AutoRAG experiments were run locally on the same converted HotpotQA subset used by this project. The Level 2 run used Ollama local embeddings with nomic-embed-text, avoiding paid external API calls. Therefore, the comparison is based on locally reproduced official AutoRAG results rather than copied benchmark numbers from the official AutoRAG repository.
